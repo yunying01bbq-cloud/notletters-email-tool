@@ -10,7 +10,9 @@
   <style>
     .mailCard{margin-top:18px}.mailCard h2{margin:0 0 6px;font-size:21px}.mailGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mailList{margin-top:18px}.mail{padding:16px 0;border-top:1px solid #e6eaf0}.mail:first-child{border-top:0}.mailTitle{font-weight:700;font-size:14px}.mailMeta{margin-top:5px;color:#7c8798;font-size:11px}.mailBody{margin-top:10px;padding:12px;border-radius:8px;background:#f6f8fa;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.6}.accountRows{border:1px solid #d7dee7;border-radius:9px;overflow:hidden}.accountRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-top:1px solid #e8ecf1}.accountRow:first-child{border-top:0}.accountRow code{word-break:break-all;font-size:12px}.queryMail{flex:none;padding:7px 11px;border:1px solid #bcd0fa;border-radius:7px;background:#f3f7ff;color:#246bfd;font-size:12px;font-weight:700}.queryMail:hover{background:#e8f0ff}#emails{display:none}@media(max-width:500px){.mailGrid{grid-template-columns:1fr}.accountRow{align-items:flex-start;flex-direction:column}}
   </style>
-  <style>.mailCard{display:none}</style>
+  <style>
+    .mailCard{display:none}.accountRow{display:block}.accountValue{display:block;padding:2px 0 10px;line-height:1.55}.rowActions{display:flex;flex-wrap:wrap;gap:7px}.rowActions button,.rowActions a{padding:7px 10px;border:1px solid #d7dee7;border-radius:7px;background:#fff;color:#526176;font-size:12px;text-decoration:none}.rowActions button:hover,.rowActions a:hover{border-color:#8eb3ff;color:#246bfd}.rowActions .openInbox{background:#246bfd;border-color:#246bfd;color:#fff}.rowActions .openInbox:hover{background:#195edb;color:#fff}
+  </style>
 </head>
 <body>
   <main class="wrap">
@@ -126,7 +128,16 @@
           return { account, link: receiverPage + '?' + params.toString() };
         });
         $('emails').value = rows.map(item => item.account + '|' + item.link).join('\n');
-        $('accountRows').innerHTML = rows.map(item => '<div class="accountRow"><code>' + escapeHtml(item.account) + '</code><a class="queryMail" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener">打开收件箱 →</a></div>').join('');
+        $('accountRows').innerHTML = rows.map(item => {
+          const separator = item.account.indexOf(':');
+          const email = separator === -1 ? item.account : item.account.slice(0, separator);
+          const password = separator === -1 ? '' : item.account.slice(separator + 1);
+          const line = item.account + '|' + item.link;
+          const copyButton = (label, value) => '<button type="button" class="copyItem" data-copy="' + encodeURIComponent(value) + '">' + label + '</button>';
+          return '<div class="accountRow"><code class="accountValue">' + escapeHtml(line) + '</code><div class="rowActions">' +
+            copyButton('复制账号', email) + copyButton('复制密码', password) + copyButton('复制接码 API', item.link) + copyButton('复制整行', line) +
+            '<a class="openInbox" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener">打开收件箱 →</a></div></div>';
+        }).join('');
         $('result').className = 'result show';
         show('购买成功，共 ' + list.length + ' 个邮箱', true);
       } catch (error) {
@@ -139,6 +150,14 @@
 
     function show(text, ok) { message.textContent = text; message.className = 'msg ' + (ok ? 'ok' : 'error'); }
     $('copy').onclick = async () => { await navigator.clipboard.writeText($('emails').value); $('copy').textContent = '已复制'; setTimeout(() => $('copy').textContent = '复制全部', 1200); };
+    $('accountRows').onclick = async event => {
+      const button = event.target.closest('.copyItem');
+      if (!button) return;
+      await navigator.clipboard.writeText(decodeURIComponent(button.dataset.copy));
+      const oldText = button.textContent;
+      button.textContent = '已复制';
+      setTimeout(() => button.textContent = oldText, 1000);
+    };
 
     function showMailMessage(text, ok) {
       $('mailMessage').textContent = text;
