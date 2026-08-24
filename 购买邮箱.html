@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>购买邮箱</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#182230;font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{width:min(640px,calc(100% - 28px));margin:50px auto}.card{background:#fff;border:1px solid #e2e7ed;border-radius:16px;padding:28px;box-shadow:0 12px 35px #18223012}h1{margin:0 0 8px;font-size:28px}p{margin:0;color:#748094;font-size:13px}.field{margin-top:22px}label{display:block;margin-bottom:8px;font-size:13px;font-weight:700}input,select{width:100%;height:46px;padding:0 13px;border:1px solid #d7dee7;border-radius:9px;background:#fff;outline:none;font-size:14px}input:focus,select:focus{border-color:#3478f6;box-shadow:0 0 0 3px #3478f615}.token{display:flex;gap:8px}.token input{flex:1}.small{width:68px;border:1px solid #d7dee7;border-radius:9px;background:#fff;color:#526176}.buy{width:100%;height:48px;margin-top:26px;border:0;border-radius:9px;background:#246bfd;color:#fff;font-weight:700}.buy:disabled{opacity:.65;cursor:wait}.msg{display:none;margin-top:16px;padding:12px;border-radius:8px;font-size:13px}.msg.error{display:block;background:#fff0f0;color:#c43d3d}.msg.ok{display:block;background:#eaf9f1;color:#168153}.result{display:none;margin-top:18px}.result.show{display:block}.resultHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.resultHead strong{font-size:14px}.copy{padding:7px 11px;border:1px solid #d7dee7;border-radius:7px;background:#fff;color:#526176;font-size:12px}textarea{width:100%;height:170px;padding:12px;border:1px solid #d7dee7;border-radius:9px;resize:vertical;font:13px/1.7 Consolas,monospace}.info{margin-top:16px;padding:14px 16px;border-radius:10px;background:#eef3f9;color:#607086;font-size:12px;line-height:1.8}.info code{color:#285cae;word-break:break-all}@media(max-width:500px){.wrap{margin:24px auto}.card{padding:22px}}
+  </style>
+  <style>
+    .mailCard{margin-top:18px}.mailCard h2{margin:0 0 6px;font-size:21px}.mailGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mailList{margin-top:18px}.mail{padding:16px 0;border-top:1px solid #e6eaf0}.mail:first-child{border-top:0}.mailTitle{font-weight:700;font-size:14px}.mailMeta{margin-top:5px;color:#7c8798;font-size:11px}.mailBody{margin-top:10px;padding:12px;border-radius:8px;background:#f6f8fa;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.6}.accountRows{border:1px solid #d7dee7;border-radius:9px;overflow:hidden}.accountRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-top:1px solid #e8ecf1}.accountRow:first-child{border-top:0}.accountRow code{word-break:break-all;font-size:12px}.queryMail{flex:none;padding:7px 11px;border:1px solid #bcd0fa;border-radius:7px;background:#f3f7ff;color:#246bfd;font-size:12px;font-weight:700}.queryMail:hover{background:#e8f0ff}#emails{display:none}@media(max-width:500px){.mailGrid{grid-template-columns:1fr}.accountRow{align-items:flex-start;flex-direction:column}}
+  </style>
+  <style>.mailCard{display:none}</style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>购买邮箱</h1>
+      <p>填写 API 密钥，选择类型和数量后提交购买。</p>
+
+      <div class="field">
+        <label for="type">邮箱类型</label>
+        <select id="type">
+          <option value="0">限量邮箱</option>
+          <option value="1">无限邮箱</option>
+          <option value="2">RU 区域邮箱</option>
+          <option value="3">个人邮箱</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="count">购买数量</label>
+        <input id="count" type="number" min="1" step="1" value="1">
+      </div>
+
+      <button id="buy" class="buy" type="button">确认购买</button>
+      <div id="message" class="msg"></div>
+
+      <div id="result" class="result">
+        <div class="resultHead"><strong>购买结果</strong><button id="copy" class="copy" type="button">复制全部</button></div>
+        <div id="accountRows" class="accountRows"></div>
+        <textarea id="emails" readonly aria-hidden="true"></textarea>
+      </div>
+
+      <div class="info">
+        购买接口：<code>POST https://api.notletters.com/v1/buy-emails</code><br>
+        接收邮件：<code>POST https://api.notletters.com/v1/letters</code><br>
+        认证：已内置测试 Token<br>
+        参数：<code>{ "count": 数量, "type_email": 类型 }</code>
+      </div>
+    </section>
+
+    <section class="card mailCard">
+      <h2>接收邮件</h2>
+      <p>使用上方填写的 API 密钥读取指定邮箱的邮件。</p>
+      <div class="mailGrid">
+        <div class="field"><label for="mailEmail">邮箱账号</label><input id="mailEmail" type="email" placeholder="name@example.com"></div>
+        <div class="field"><label for="mailPassword">邮箱密码</label><input id="mailPassword" type="password" placeholder="邮箱密码"></div>
+      </div>
+      <div class="field"><label for="search">搜索（可选）</label><input id="search" type="text" placeholder="搜索发件人、标题或正文"></div>
+      <button id="receive" class="buy" type="button">接收邮件</button>
+      <div id="mailMessage" class="msg"></div>
+      <div id="mailList" class="mailList"></div>
+    </section>
+  </main>
+
+  <script>
+    const API_TOKEN = 'aKzyZNYjCC6KRNyitkz2m7Kv2SdwsCCb';
+    const $ = (id) => document.getElementById(id);
+    const token = { value: API_TOKEN }, buy = $('buy'), message = $('message');
+    if (location.hash) history.replaceState(null, '', location.href.split('#')[0]);
+
+    function getList(data) {
+      if (Array.isArray(data)) return data;
+      if (!data || typeof data !== 'object') return null;
+      for (const key of ['data', 'emails', 'email', 'result', 'items']) {
+        const value = data[key];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string' && value) return [value];
+        const nested = getList(value);
+        if (nested) return nested;
+      }
+      return null;
+    }
+
+    function formatItem(item) {
+      if (typeof item === 'string') return item;
+      if (!item || typeof item !== 'object') return '';
+      const email = item.email || item.login || item.username;
+      const password = item.password || item.pass;
+      return email ? email + (password ? ':' + password : '') : '';
+    }
+
+    function apiError(data, fallback) {
+      if (typeof data === 'string') return data || fallback;
+      return data?.message || data?.error || data?.detail || (typeof data?.data === 'string' ? data.data : fallback);
+    }
+
+    buy.onclick = async () => {
+      const apiToken = token.value.trim();
+      const count = Number($('count').value);
+      if (!apiToken) return show('请填写 API 密钥', false);
+      if (!Number.isInteger(count) || count < 1) return show('数量必须是大于 0 的整数', false);
+
+      buy.disabled = true; buy.textContent = '正在购买…';
+      message.className = 'msg'; $('result').className = 'result';
+      try {
+        const response = await fetch('https://api.notletters.com/v1/buy-emails', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + apiToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count, type_email: Number($('type').value) })
+        });
+        const text = await response.text();
+        let data = text;
+        try { data = JSON.parse(text); } catch (_) {}
+        if (!response.ok) throw new Error(apiError(data, '请求失败（' + response.status + '）'));
+
+        const list = getList(data)?.map(formatItem).filter(Boolean);
+        if (!list?.length) throw new Error(apiError(data, '接口没有返回邮箱数据'));
+        const receiverPage = new URL('收邮件.html', location.href).href;
+        const rows = list.map(account => {
+          const separator = account.indexOf(':');
+          const email = separator === -1 ? account : account.slice(0, separator);
+          const password = separator === -1 ? '' : account.slice(separator + 1);
+          const params = new URLSearchParams({ email, password, token: apiToken });
+          return { account, link: receiverPage + '?' + params.toString() };
+        });
+        $('emails').value = rows.map(item => item.account + '|' + item.link).join('\n');
+        $('accountRows').innerHTML = rows.map(item => '<div class="accountRow"><code>' + escapeHtml(item.account) + '</code><a class="queryMail" href="' + escapeHtml(item.link) + '" target="_blank" rel="noopener">打开收件箱 →</a></div>').join('');
+        $('result').className = 'result show';
+        show('购买成功，共 ' + list.length + ' 个邮箱', true);
+      } catch (error) {
+        const cors = error instanceof TypeError ? '浏览器阻止了跨域请求，请确认 API 已允许网页直接访问（CORS）' : error.message;
+        show(cors, false);
+      } finally {
+        buy.disabled = false; buy.textContent = '确认购买';
+      }
+    };
+
+    function show(text, ok) { message.textContent = text; message.className = 'msg ' + (ok ? 'ok' : 'error'); }
+    $('copy').onclick = async () => { await navigator.clipboard.writeText($('emails').value); $('copy').textContent = '已复制'; setTimeout(() => $('copy').textContent = '复制全部', 1200); };
+
+    function showMailMessage(text, ok) {
+      $('mailMessage').textContent = text;
+      $('mailMessage').className = 'msg ' + (ok ? 'ok' : 'error');
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
+
+    $('receive').onclick = async () => {
+      const apiToken = token.value.trim();
+      const email = $('mailEmail').value.trim();
+      const password = $('mailPassword').value;
+      const search = $('search').value.trim();
+      if (!apiToken) return showMailMessage('请先在上方填写 API 密钥', false);
+      if (!email || !password) return showMailMessage('请填写邮箱账号和密码', false);
+
+      const button = $('receive');
+      button.disabled = true; button.textContent = '正在接收…';
+      $('mailMessage').className = 'msg'; $('mailList').innerHTML = '';
+      try {
+        const body = { email, password };
+        if (search) body.filters = { search };
+        const response = await fetch('https://api.notletters.com/v1/letters', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + apiToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const text = await response.text();
+        let data = text;
+        try { data = JSON.parse(text); } catch (_) {}
+        if (!response.ok) throw new Error(apiError(data, '接收失败（' + response.status + '）'));
+        const letters = data?.data?.letters || data?.letters;
+        if (!Array.isArray(letters)) throw new Error(apiError(data, '接口返回的邮件格式不正确'));
+        if (!letters.length) { showMailMessage('邮箱中暂时没有邮件', true); return; }
+
+        $('mailList').innerHTML = letters.map(letter => {
+          const date = letter.date ? new Date(Number(letter.date) * 1000).toLocaleString() : '';
+          const bodyText = letter.letter?.text || letter.letter?.html || '';
+          return '<article class="mail"><div class="mailTitle">' + escapeHtml(letter.subject || '无标题') + '</div>' +
+            '<div class="mailMeta">发件人：' + escapeHtml(letter.sender_name || letter.sender || '未知') + (date ? ' · ' + escapeHtml(date) : '') + '</div>' +
+            '<div class="mailBody">' + escapeHtml(bodyText) + '</div></article>';
+        }).join('');
+        showMailMessage('已收到 ' + letters.length + ' 封邮件', true);
+      } catch (error) {
+        showMailMessage(error instanceof TypeError ? '浏览器阻止了跨域请求，请确认 API 允许网页直接访问' : error.message, false);
+      } finally {
+        button.disabled = false; button.textContent = '接收邮件';
+      }
+    };
+
+  </script>
+</body>
+</html>
+
